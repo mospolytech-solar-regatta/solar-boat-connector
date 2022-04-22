@@ -25,9 +25,10 @@ class SerialTask(Task):
 
 @app.task(bind=True, base=SerialTask)
 def read_data(self):
-    res = self.port.readline().decode('utf-8').strip()
-    if res == '':
+    res = self.port.readlines()
+    if len(res) < 1:
         return
+    res = res[-1].decode('utf-8').strip()
     telemetry = Telemetry(**json.loads(res))
     helpers.post(telemetry.json())
     return telemetry

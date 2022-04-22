@@ -12,7 +12,6 @@ from store.redis import get_redis
 from store.postgres import get_db
 
 load_dotenv('.env', override=True)
-print(os.environ.get('POSTGRES_PORT', 'hehe'))
 
 app = FastAPI()
 

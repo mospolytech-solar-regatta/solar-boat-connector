@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import config
 
-engine = create_engine(config.postgres_dsn, echo=True)
+engine = create_engine(config.postgres_dsn)
 session_factory = sessionmaker(engine)
 Base = declarative_base()
 

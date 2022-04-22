@@ -14,7 +14,6 @@ async def get_redis() -> Redis:
 
 async def set(redis: Redis, key: str, value):
     val = await redis.set(key, value)
-    print(val)
 
 
 async def get(redis: Redis, key: str):

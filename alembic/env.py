@@ -2,7 +2,6 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
@@ -11,7 +10,6 @@ from sqlalchemy import pool
 from store.postgres import Base
 
 config = context.config
-load_dotenv('../.env', override=True)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
