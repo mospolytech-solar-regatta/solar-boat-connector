@@ -1,9 +1,9 @@
 import aioredis
 from aioredis import Redis
 
-import config
+import app_config
 
-pool = aioredis.ConnectionPool.from_url(config.redis_dsn, max_connections=10)
+pool = aioredis.ConnectionPool.from_url(app_config.redis_dsn, max_connections=10)
 
 
 async def get_redis() -> Redis:

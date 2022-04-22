@@ -1,23 +1,30 @@
 import json
+from dataclasses import dataclass
 
 import serial
 from celery import Task
+from pydantic import BaseModel
 
-import config
+import app_config
 from background.app import app
 from background import helpers
 from models.request_models import Telemetry
 
 
+class SerialConfig(BaseModel):
+    name: str
+    rate: int
+
+
 class SerialTask(Task):
     _port = None
-    _portName = config.serial_port
-    _portRate = config.serial_rate
+    _portConfig = SerialConfig(name=app_config.serial_port, rate=app_config.serial_rate)
 
     @property
     def port(self):
         if self._port is None:
-            self._port = serial.Serial(self._portName, self._portRate, timeout=0, parity=serial.PARITY_EVEN, rtscts=1)
+            self._port = serial.Serial(self._portConfig.name, self._portConfig.rate, timeout=0,
+                                       parity=serial.PARITY_EVEN, rtscts=1)
         if not self._port.isOpen():
             self._port.open()
         return self._port
@@ -32,3 +39,8 @@ def read_data(self):
     telemetry = Telemetry(**json.loads(res))
     helpers.post(telemetry.json())
     return telemetry
+
+
+@app.task(bind=True, base=SerialTask)
+def get_config(self):
+    return self._portConfig.json()

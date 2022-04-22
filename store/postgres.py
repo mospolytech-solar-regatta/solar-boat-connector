@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import config
+import app_config
 
-engine = create_engine(config.postgres_dsn)
+engine = create_engine(app_config.postgres_dsn)
 session_factory = sessionmaker(engine)
 Base = declarative_base()
 
