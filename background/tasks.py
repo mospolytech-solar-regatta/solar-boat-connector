@@ -37,8 +37,8 @@ def read_data(self):
         return
     res = res[-1].decode('utf-8').strip()
     telemetry = Telemetry(**json.loads(res))
+    print(telemetry.json())
     helpers.post(telemetry.json())
-    return telemetry
 
 
 @app.task(bind=True, base=SerialTask)

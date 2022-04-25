@@ -18,7 +18,7 @@ class Telemetry(BaseModel):
     time_to_go: int
     controller_volts: float
     MPPT_volts: float
-    MPPT_watt: float
+    MPPT_watts: float
     motor_temp: float
     motor_revols: float
     speed: Optional[float]
