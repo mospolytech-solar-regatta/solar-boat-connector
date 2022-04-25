@@ -14,7 +14,7 @@ class Telemetry(Base):
     time_to_go = Column(Integer)
     controller_volts = Column(Float)
     MPPT_volts = Column(Float)
-    MPPT_watt = Column(Float)
+    MPPT_watts = Column(Float)
     motor_temp = Column(Float)
     motor_revols = Column(Float)
     speed = Column(Float)
