@@ -11,7 +11,7 @@ from background.tasks import read_data, SerialConfig
 from models.request_models import Telemetry
 from store.redis import get_redis
 from store.postgres import get_db
-from background.tasks import get_config
+from background.tasks import get_config, set_config
 
 load_dotenv('.env', override=True)
 
@@ -43,3 +43,11 @@ async def get_serial_config():
     res = get_config.delay()
     res = res.get()
     return SerialConfig(**json.loads(res))
+
+
+@app.post("/serial_config/", response_model=SerialConfig)
+async def get_serial_config(config: SerialConfig):
+    res = set_config.delay(config.dict())
+    res = res.get()
+    res = SerialConfig(**json.loads(res))
+    return res

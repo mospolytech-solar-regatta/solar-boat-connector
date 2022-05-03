@@ -12,6 +12,6 @@ result_persistent = False
 beat_schedule = {
     'read-serial': {
         'task': 'background.tasks.read_data',
-        'schedule': 0.5,
+        'schedule': 5,
     },
 }

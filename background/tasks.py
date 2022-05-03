@@ -1,5 +1,4 @@
 import json
-from dataclasses import dataclass
 
 import serial
 from celery import Task
@@ -22,25 +21,51 @@ class SerialTask(Task):
 
     @property
     def port(self):
-        if self._port is None:
-            self._port = serial.Serial(self._portConfig.name, self._portConfig.rate, timeout=0,
-                                       parity=serial.PARITY_EVEN, rtscts=1)
-        if not self._port.isOpen():
-            self._port.open()
-        return self._port
+        if SerialTask._port is None:
+            SerialTask._port = serial.Serial(SerialTask._portConfig.name, SerialTask._portConfig.rate, timeout=0,
+                                             parity=serial.PARITY_EVEN, rtscts=1)
+        if not SerialTask._port.isOpen():
+            SerialTask._port.open()
+        return SerialTask._port
+
+    def set_config(self, config: SerialConfig):
+        SerialTask._portConfig = config
+
+    def get_config(self):
+        return SerialTask._portConfig
+
+    def reopen_port(self):
+        if SerialTask._port is not None:
+            SerialTask._port.close()
+        SerialTask._port = None
+
+    def read_lines(self):
+        if SerialTask._port is None:
+            SerialTask._port = serial.Serial(SerialTask._portConfig.name, SerialTask._portConfig.rate, timeout=0,
+                                             parity=serial.PARITY_EVEN, rtscts=1)
+        if not SerialTask._port.isOpen():
+            SerialTask._port.open()
+        return SerialTask._port.readlines()
 
 
 @app.task(bind=True, base=SerialTask)
 def read_data(self):
-    res = self.port.readlines()
+    res = self.read_lines()
     if len(res) < 1:
         return
     res = res[-1].decode('utf-8').strip()
     telemetry = Telemetry(**json.loads(res))
-    print(telemetry.json())
     helpers.post(telemetry.json())
 
 
 @app.task(bind=True, base=SerialTask)
 def get_config(self):
-    return self._portConfig.json()
+    return self.get_config().json()
+
+
+@app.task(bind=True, base=SerialTask)
+def set_config(self, config: dict):
+    config = SerialConfig(**config)
+    self.set_config(config)
+    self.reopen_port()
+    return self.get_config().json()
