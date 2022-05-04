@@ -30,7 +30,6 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    res = read_data.delay()
     return {"message": "Hello World"}
 
 
