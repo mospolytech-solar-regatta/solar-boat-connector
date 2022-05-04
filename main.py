@@ -1,5 +1,4 @@
 import json
-import os
 
 from aioredis import Redis
 from dotenv import load_dotenv
@@ -7,15 +6,26 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
+import constants
 from background.tasks import read_data, SerialConfig
 from models.request_models import Telemetry
 from store.redis import get_redis
 from store.postgres import get_db
 from background.tasks import get_config, set_config
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv('.env', override=True)
+origins = constants.ALLOWED_ORIGIN
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
