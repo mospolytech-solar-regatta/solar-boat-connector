@@ -31,7 +31,6 @@ platformdirs==2.5.2
 prompt-toolkit==3.0.29
 psycopg2==2.9.3
 pydantic==1.9.0
-pylint==2.13.8
 pyparsing==3.0.8
 pyserial==3.5
 python-dotenv==0.20.0
