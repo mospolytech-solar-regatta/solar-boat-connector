@@ -1,15 +1,23 @@
 import json
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
 
-from pydantic.datetime_parse import parse_datetime
+from aioredis import Redis
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.telemetry import Telemetry as pgTelemetry
-from pydantic import BaseModel
-
 import constants
-from store.redis import *
+from models.telemetry import Telemetry as pgTelemetry
+# pylint: disable=redefined-builtin
+from store.redis import get, set
+
+
+@dataclass
+class TelemetrySaveStatus:
+    TEMP_SAVED = 'temporary saved'
+    PERM_SAVED = 'permanently saved'
+    FAILED = 'fail'
 
 
 class Telemetry(BaseModel):
@@ -36,15 +44,15 @@ class Telemetry(BaseModel):
         cur = await get(db, constants.CURRENT_STATE_KEY)
         if cur is None:
             await set(db, constants.CURRENT_STATE_KEY, self.json())
-            return 'OK'
+            return TelemetrySaveStatus.PERM_SAVED
 
         cur = Telemetry(**json.loads(cur))
         if cur.created_at < self.created_at:
             await set(db, constants.CURRENT_STATE_KEY, self.json())
         if self.created_at - cur.created_at > timedelta(seconds=constants.TELEMETRY_REMEMBER_DELAY):
             pgTelemetry.save_from_schema(self, session)
-            return 'OK'
-        return 'not latest value'
+            return TelemetrySaveStatus.PERM_SAVED
+        return TelemetrySaveStatus.FAILED
 
     @staticmethod
     async def get_current_state(db: Redis):

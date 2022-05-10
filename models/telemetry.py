@@ -1,8 +1,8 @@
 from sqlalchemy import Column
 from sqlalchemy.orm import Session
+from sqlalchemy.types import DateTime, Integer, Float
 
 from store.postgres import Base
-from sqlalchemy.types import DateTime, Integer, Float
 
 
 class Telemetry(Base):
@@ -31,5 +31,5 @@ class Telemetry(Base):
 
     @staticmethod
     def save_from_schema(schema, session: Session):
-        t = Telemetry(**schema.dict())
-        t.save(session)
+        telemetry = Telemetry(**schema.dict())
+        telemetry.save(session)

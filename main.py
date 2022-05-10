@@ -3,16 +3,15 @@ import json
 from aioredis import Redis
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 import constants
-from background.tasks import read_data, SerialConfig
-from models.request_models import Telemetry
-from store.redis import get_redis
+from background.tasks import get_config, set_config, SerialConfig, send
+from models.request_models import Telemetry, TelemetrySaveStatus
 from store.postgres import get_db
-from background.tasks import get_config, set_config
-from fastapi.middleware.cors import CORSMiddleware
+from store.redis import get_redis
 
 load_dotenv('.env', override=True)
 origins = constants.ALLOWED_ORIGIN
@@ -36,7 +35,10 @@ async def root():
 @app.post("/current_state/")
 async def post_current_state(telemetry: Telemetry, redis: Redis = Depends(get_redis),
                              session: Session = Depends(get_db)):
-    return await telemetry.save_current_state(redis, session)
+    res = await telemetry.save_current_state(redis, session)
+    if res == TelemetrySaveStatus.PERM_SAVED:
+        send.delay(telemetry.json())
+    return JSONResponse({'status': 'success'})
 
 
 @app.get("/current_state/", response_model=Telemetry)

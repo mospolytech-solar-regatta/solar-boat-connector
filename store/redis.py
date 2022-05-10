@@ -11,9 +11,9 @@ async def get_redis() -> Redis:
     yield redis
     await redis.close()
 
-
+# pylint: disable=redefined-builtin
 async def set(redis: Redis, key: str, value):
-    val = await redis.set(key, value)
+    await redis.set(key, value)
 
 
 async def get(redis: Redis, key: str):

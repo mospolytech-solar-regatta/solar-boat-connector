@@ -5,8 +5,8 @@ from celery import Task
 from pydantic import BaseModel
 
 import app_config
-from background.app import app
 from background import helpers
+from background.app import app
 from models.request_models import Telemetry
 
 
@@ -19,11 +19,15 @@ class SerialTask(Task):
     _port = None
     _portConfig = SerialConfig(name=app_config.serial_port, rate=app_config.serial_rate)
 
+    @staticmethod
+    def build_serial():
+        return serial.Serial(SerialTask._portConfig.name, SerialTask._portConfig.rate,
+                             timeout=0, parity=serial.PARITY_EVEN, rtscts=1)
+
     @property
     def port(self):
         if SerialTask._port is None:
-            SerialTask._port = serial.Serial(SerialTask._portConfig.name, SerialTask._portConfig.rate, timeout=0,
-                                             parity=serial.PARITY_EVEN, rtscts=1)
+            SerialTask._port = self.build_serial()
         if not SerialTask._port.isOpen():
             SerialTask._port.open()
         return SerialTask._port
@@ -41,11 +45,17 @@ class SerialTask(Task):
 
     def read_lines(self):
         if SerialTask._port is None:
-            SerialTask._port = serial.Serial(SerialTask._portConfig.name, SerialTask._portConfig.rate, timeout=0,
-                                             parity=serial.PARITY_EVEN, rtscts=1)
+            SerialTask._port = self.build_serial()
         if not SerialTask._port.isOpen():
             SerialTask._port.open()
         return SerialTask._port.readlines()
+
+    def send(self, data: str):
+        if SerialTask._port is None:
+            SerialTask._port = self.build_serial()
+        if not SerialTask._port.isOpen():
+            SerialTask._port.open()
+        SerialTask._port.write(data.encode('utf-8'))
 
 
 @app.task(bind=True, base=SerialTask)
@@ -69,3 +79,8 @@ def set_config(self, config: dict):
     self.set_config(config)
     self.reopen_port()
     return self.get_config().json()
+
+
+@app.task(bind=True, base=SerialTask)
+def send(self, data: str):
+    self.send(data)
