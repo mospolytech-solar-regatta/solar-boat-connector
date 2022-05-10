@@ -10,6 +10,8 @@ extension-pkg-whitelist=
 ignore=
     venv,
 
+fail-under=8
+
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
 ignore-patterns=config.py
