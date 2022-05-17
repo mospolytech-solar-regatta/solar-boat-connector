@@ -52,5 +52,5 @@ jobs:
           password: ${{ secrets.REGISTRY_TOKEN }}
           registry: docker.pkg.github.com
           dockerfile: celery_Dockerfile
-          tags: "celery-latest,celery-${{ github.SHA }}"
+          tags: "latest,${{ github.SHA }}"
           buildargs: COMMIT
