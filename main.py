@@ -29,7 +29,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return JSONResponse(status_code=403)
+    return {}
 
 
 @app.post("/current_state/")
