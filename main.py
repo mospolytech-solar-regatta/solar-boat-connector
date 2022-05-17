@@ -29,7 +29,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return JSONResponse(status_code=403)
 
 
 @app.post("/current_state/")
