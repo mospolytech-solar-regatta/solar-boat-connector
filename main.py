@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse
 
 import constants
 from background.tasks import get_config, set_config, SerialConfig, send
-from models.request_models import Telemetry, TelemetrySaveStatus
+from models.request_models import Telemetry, TelemetrySaveStatus, State, PointSet
 from store.postgres import get_db
 from store.redis import get_redis
 
@@ -41,10 +41,10 @@ async def post_current_state(telemetry: Telemetry, redis: Redis = Depends(get_re
     return JSONResponse({'status': 'success'})
 
 
-@app.get("/current_state/", response_model=Telemetry)
+@app.get("/current_state/", response_model=State)
 async def get_current_state(redis: Redis = Depends(get_redis)):
     try:
-        return await Telemetry.get_current_state(redis)
+        return await State.get_current_state(redis)
     except FileNotFoundError:
         return JSONResponse(status_code=404, content={'message': 'key not found'})
 
@@ -62,3 +62,8 @@ async def get_serial_config(config: SerialConfig):
     res = res.get()
     res = SerialConfig(**json.loads(res))
     return res
+
+
+@app.get('/set_lap_point/', response_model=PointSet)
+async def set_lap_point(redis: Redis = Depends(get_redis)):
+    return await State.set_point(redis)

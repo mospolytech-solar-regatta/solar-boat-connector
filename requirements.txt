@@ -10,3 +10,4 @@ redis==4.2.2
 requests==2.27.1
 SQLAlchemy==1.4.35
 uvicorn==0.17.6
+geopy==2.2.0
