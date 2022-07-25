@@ -21,7 +21,8 @@ tasks:
       gp sync-done venv
 
   - name: migrate
-    init: |
+    init: gp sync-await venv
+    command: |
       gp sync-await venv
       source venv/bin/activate
       ./scripts/migrate.sh
