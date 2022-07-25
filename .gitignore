@@ -4,3 +4,4 @@ __pycache__
 celerybeat-schedule*
 background/config/local*
 solar-tester
+!/.idea/runConfigurations
