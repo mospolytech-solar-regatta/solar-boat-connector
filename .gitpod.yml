@@ -23,7 +23,6 @@ tasks:
   - name: migrate
     init: gp sync-await venv
     command: |
-      gp sync-await venv
       source venv/bin/activate
       ./scripts/migrate.sh
 
@@ -38,9 +37,24 @@ tasks:
       source venv/bin/activate
       ./scripts/run_celery_dev.sh
 
+  - name: Tester
+    init: |
+      cd ../solar-tester
+      virtualenv venv
+      source venv/bin/activate
+      pip install -r requirements.txt
+    command: |
+      source venv/bin/activate
+      uvicorn --port 8080 main:app
 
 image:
   file: .gitpod.dockerfile
+
+ports:
+  - name: Solar Tester
+    description: Controller mocks console
+    port: 8080
+    onOpen: open-browser
 
 additionalRepositories:
   - url: https://github.com/mospolytech-solar-regatta/solar-tester
