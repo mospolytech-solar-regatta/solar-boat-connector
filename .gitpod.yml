@@ -33,6 +33,7 @@ tasks:
   - name: Celery
     init: gp sync-await venv
     command: |
+      ./scripts/update_tester_pod.sh
       source venv/bin/activate
       ./scripts/run_celery_dev.sh
 
