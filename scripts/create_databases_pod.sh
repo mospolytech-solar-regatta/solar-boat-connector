@@ -1,2 +1,1 @@
-psql -h localhost -c "CREATE DATABASE \"solar-boat\"";
-psql -h localhost -c "CREATE DATABASE \"solar-api\"";
+psql -h localhost -f scripts/setup_pod_users.sql;

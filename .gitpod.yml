@@ -6,21 +6,37 @@ tasks:
   - name: Redis
     init: echo "starting redis"
     command: sudo service redis-server start
+
   - name: Postrgres
     init: echo "starting pg"
     command: ./scripts/create_databases_pod.sh
+
   - name: Venv
     init: |
       virtualenv venv
       source venv/bin/activate
       pip install -r requirements.txt
+      ln -s ../solar-test .
+      cp .gitpod/gitpod.env .env
       gp sync-done venv
+
+  - name: migrate
+    init: |
+      gp sync-await venv
+      ./scripts/migrate.sh
 
   - name: Celery
     init: gp sync-await venv
     command: |
+      gp sync-await socat
       source venv/bin/activate
       ./scripts/run_celery_dev.sh
+
+  - name: socat
+    command: |
+      socat -d -d pty,link=/tmp/vserial1,raw,echo=0 pty,link=/tmp/vserial2,raw,echo=0
+      gp sync-done socat
+
 image:
   file: .gitpod.dockerfile
 
