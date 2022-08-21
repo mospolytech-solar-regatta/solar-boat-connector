@@ -33,3 +33,8 @@ class Telemetry(Base):
     def save_from_schema(schema, session: Session):
         telemetry = Telemetry(**schema.dict())
         telemetry.save(session)
+
+    @staticmethod
+    def get_last(session: Session):
+        res = session.query(Telemetry).order_by(Telemetry.id.desc()).first()
+        return res

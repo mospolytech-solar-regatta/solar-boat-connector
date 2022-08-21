@@ -8,9 +8,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import constants
-from models.telemetry import Telemetry as pgTelemetry
+from app.models.telemetry import Telemetry as pgTelemetry
 # pylint: disable=redefined-builtin
-from store.redis import get, set
+from store.redis import RedisDB
 
 
 @dataclass
@@ -41,6 +41,7 @@ class PointSet(BaseModel):
     lng: float
     lat: float
 
+
 class State(BaseModel):
     created_at: datetime
     controller_watts: int
@@ -63,17 +64,21 @@ class State(BaseModel):
 
     @staticmethod
     async def get_current_state(db: Redis):
-        cur = await get(db, constants.CURRENT_STATE_KEY)
+        cur = await RedisDB.get(db, constants.CURRENT_STATE_KEY)
         if cur is None:
             raise FileNotFoundError("Key not found")
         return State(**json.loads(cur))
+
+    @staticmethod
+    def get_pg_state(session: Session):
+        return pgTelemetry.get_last(session)
 
     def update_from_previous(self, prev):
         cur_coord = (self.position_lat, self.position_lng)
         prev_coord = (prev.position_lat, prev.position_lng)
         delta = (self.created_at - prev.created_at).seconds / 3600
         distance = geopy.distance.geodesic(cur_coord, prev_coord).km
-        self.speed = distance / delta
+        self.speed = distance / max(delta, 1)
         self.distance_travelled = prev.distance_travelled + distance
         self.laps = prev.laps
         self.lap_point_lat = prev.lap_point_lat
@@ -102,24 +107,28 @@ class State(BaseModel):
         return res
 
     async def _save_redis(self, db: Redis):
-        await set(db, constants.CURRENT_STATE_KEY, self.json())
+        await RedisDB.set(db, constants.CURRENT_STATE_KEY, self.json())
 
     def _save_pg(self, session: Session):
         pgTelemetry.save_from_schema(self, session)
+        session.commit()
 
     async def save(self, db: Redis, session: Session):
         try:
             prev = await State.get_current_state(db)
         except FileNotFoundError:
             await self._save_redis(db)
+            self._save_pg(session)
             return TelemetrySaveStatus.PERM_SAVED
 
         if prev.created_at < self.created_at:
             await self._save_redis(db)
+        prev = State.get_pg_state(session)
         if self.created_at - prev.created_at > timedelta(seconds=constants.TELEMETRY_REMEMBER_DELAY):
             self._save_pg(session)
             return TelemetrySaveStatus.PERM_SAVED
-        return TelemetrySaveStatus.FAILED
+        else:
+            return TelemetrySaveStatus.TEMP_SAVED
 
     @staticmethod
     async def set_point(db: Redis) -> PointSet:
@@ -144,4 +153,3 @@ class State(BaseModel):
         prev = await State.get_current_state(db)
         prev.distance_travelled = 0
         await prev._save_redis(db)
-

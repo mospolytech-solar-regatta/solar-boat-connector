@@ -1,17 +1,30 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from store.config import PostgresConfig
 
-import app_config
-
-engine = create_engine(app_config.postgres_dsn)
-session_factory = sessionmaker(engine)
 Base = declarative_base()
 
 
-def get_db():
-    session = session_factory()
-    try:
-        yield session
-    finally:
-        session.close()
+class PostgresDB:
+    def __init__(self, cfg: PostgresConfig):
+        self.config = cfg
+        self.factory = self._make_factory()
+
+    def get_session(self):
+        factory = self.get_factory()
+        session = factory()
+        return session
+
+    def get_factory(self):
+        return self.factory
+
+    def _make_factory(self) -> sessionmaker:
+        pg_dsn = self._get_dsn()
+        engine = create_engine(pg_dsn)
+        session_factory = sessionmaker(engine)
+        return session_factory
+
+    def _get_dsn(self) -> str:
+        return f'postgresql://{self.config.user}:{self.config.password}@' \
+               f'{self.config.server}:{self.config.port}/{self.config.db}'

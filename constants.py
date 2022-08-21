@@ -10,4 +10,4 @@ ALLOWED_ORIGIN = json.loads(os.environ.get('ALLOW_ORIGIN', '["*"]'))
 
 @dataclass
 class URLEndpoints:
-    STATE_POST = '/current_state/'
+    STATE_POST = '/state/'

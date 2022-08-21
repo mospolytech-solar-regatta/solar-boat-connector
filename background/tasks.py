@@ -2,27 +2,30 @@ import json
 
 import serial
 from celery import Task
-from pydantic import BaseModel
+from pydantic import BaseSettings
 
 import app_config
 from background import helpers
 from background.app import app
-from models.request_models import Telemetry
+from app.models.request_models import Telemetry
 
 
-class SerialConfig(BaseModel):
-    name: str
-    rate: int
+class SerialConfig(BaseSettings):
+    serial_port: str
+    serial_rate: int
+
+    class Config:
+        env_file = "serial.config"
 
 
 class SerialTask(Task):
     _port = None
-    _portConfig = SerialConfig(name=app_config.serial_port, rate=app_config.serial_rate)
+    _portConfig = SerialConfig()
 
     @staticmethod
     def build_serial():
-        return serial.Serial(SerialTask._portConfig.name, SerialTask._portConfig.rate,
-                             timeout=0, parity=serial.PARITY_EVEN, rtscts=1)
+        return serial.Serial(SerialTask._portConfig.serial_port, SerialTask._portConfig.serial_rate,
+                             timeout=0, parity=serial.PARITY_NONE, rtscts=1)
 
     @property
     def port(self):
