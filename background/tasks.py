@@ -11,8 +11,8 @@ from app.models.request_models import Telemetry
 
 
 class SerialConfig(BaseSettings):
-    serial_port: str
-    serial_rate: int
+    serial_port: str = "/dev/ttyS0"
+    serial_rate: int = 115200
 
     class Config:
         env_file = "serial.config"
