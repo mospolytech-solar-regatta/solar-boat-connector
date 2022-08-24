@@ -7,8 +7,18 @@ class RedisDB:
     def __init__(self, cfg: RedisConfig):
         self.config = cfg
         self.pool = aioredis.ConnectionPool.from_url(cfg.dsn, max_connections=10)
+        self.redis = self._create_redis()
 
-    def get_redis(self) -> Redis:
+    def __del__(self):
+        self._stop_connection()
+
+    def get_redis(self):
+        return self.redis
+
+    def _stop_connection(self):
+        self.redis.close()
+
+    def _create_redis(self) -> Redis:
         redis = aioredis.Redis(connection_pool=self.pool)
         return redis
 

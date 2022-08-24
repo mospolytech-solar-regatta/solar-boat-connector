@@ -140,6 +140,21 @@ class State(BaseModel):
         return PointSet(lng=prev.lap_point_lng, lat=prev.lap_point_lat)
 
     @staticmethod
+    async def reset_point(db: Redis) -> None:
+        prev = await State.get_current_state(db)
+        prev.lap_point_lng = None
+        prev.lap_point_lat = None
+        prev.laps = 0
+        await prev._save_redis(db)
+
+    @staticmethod
+    async def reset_distance(db: Redis) -> None:
+        prev = await State.get_current_state(db)
+        prev.distance_travelled = 0
+        await prev._save_redis(db)
+
+
+    @staticmethod
     async def remove_point(db: Redis):
         prev = await State.get_current_state(db)
         prev.lap_point_lng = None

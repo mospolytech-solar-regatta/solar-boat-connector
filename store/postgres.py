@@ -10,11 +10,16 @@ class PostgresDB:
     def __init__(self, cfg: PostgresConfig):
         self.config = cfg
         self.factory = self._make_factory()
+        self.session = self.factory()
+
+    def __del__(self):
+        self._stop_connection()
+
+    def _stop_connection(self):
+        self.session.close()
 
     def get_session(self):
-        factory = self.get_factory()
-        session = factory()
-        return session
+        return self.session
 
     def get_factory(self):
         return self.factory

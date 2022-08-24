@@ -11,3 +11,17 @@ router = APIRouter(prefix='/action')
 async def set_lap_point(cfg: AppConfig = Depends(get_config)):
     redis = cfg.redis.get_redis()
     return await State.set_point(redis)
+
+
+@router.get('/reset_point/', response_model=str)
+async def reset(cfg: AppConfig = Depends(get_config)):
+    redis = cfg.redis.get_redis()
+    await State.reset(redis)
+    return "ok"
+
+
+@router.get('/reset_distance/', response_model=str)
+async def reset(cfg: AppConfig = Depends(get_config)):
+    redis = cfg.redis.get_redis()
+    await State.reset(redis)
+    return "ok"
