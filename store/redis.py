@@ -1,6 +1,7 @@
 import aioredis
 from aioredis import Redis
 from store.config import RedisConfig
+import asyncio
 
 
 class RedisDB:
@@ -16,7 +17,7 @@ class RedisDB:
         return self.redis
 
     def _stop_connection(self):
-        self.redis.close()
+        asyncio.run(self.redis.close())
 
     def _create_redis(self) -> Redis:
         redis = aioredis.Redis(connection_pool=self.pool)
