@@ -3,4 +3,4 @@ set -a
 . ./serial.config
 set +a
 
-uvicorn main:app
+uvicorn app.main:app
