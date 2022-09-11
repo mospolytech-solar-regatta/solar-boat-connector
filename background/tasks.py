@@ -21,6 +21,7 @@ class SerialConfig(BaseSettings):
 class SerialTask(Task):
     _port = None
     _portConfig = SerialConfig()
+    buffer = ''
 
     @staticmethod
     def build_serial():
@@ -66,10 +67,14 @@ def read_data(self):
     res = self.read_lines()
     if len(res) < 1:
         return
-    res = res[-1].decode('utf-8').strip()
-    telemetry = Telemetry(**json.loads(res))
-    helpers.post(telemetry.json())
-
+    res: str = res[-1].decode('utf-8')
+    if res.find('\n') != -1:
+        res = self.buffer + res
+        self.buffer = ''
+        telemetry = Telemetry(**json.loads(res))
+        helpers.post(telemetry.json())
+    else:
+        self.buffer += res
 
 @app.task(bind=True, base=SerialTask)
 def get_config(self):
