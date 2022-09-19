@@ -124,7 +124,7 @@ class State(BaseModel):
         if prev.created_at < self.created_at:
             await self._save_redis(db)
         prev = State.get_pg_state(session)
-        if self.created_at - prev.created_at > timedelta(seconds=constants.TELEMETRY_REMEMBER_DELAY):
+        if prev is None or self.created_at - prev.created_at > timedelta(seconds=constants.TELEMETRY_REMEMBER_DELAY):
             self._save_pg(session)
             return TelemetrySaveStatus.PERM_SAVED
         else:

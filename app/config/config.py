@@ -8,6 +8,8 @@ class Config(BaseSettings):
     postgres_user: str
     postgres_port: int
     redis_dsn: str
+    redis_telemetry_channel: str
+    redis_config_channel: str
     celery_config_module: str
     allow_origin: str = '["*"]'
     origin: str = "http://localhost:8000"

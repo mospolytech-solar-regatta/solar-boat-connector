@@ -3,7 +3,6 @@ from fastapi import Depends
 from fastapi.responses import JSONResponse
 from app.dependencies import get_config
 from app.models.request_models import State, Telemetry, TelemetrySaveStatus
-from background.tasks import send
 from app.config.app_config import AppConfig
 
 router = APIRouter(prefix='/state', responses={404: {"description": "Not found"}})
@@ -14,8 +13,6 @@ async def post_current_state(telemetry: Telemetry, cfg: AppConfig = Depends(get_
     redis = cfg.redis.get_redis()
     session = cfg.db.get_session()
     res = await telemetry.save_current_state(redis, session)
-    if res == TelemetrySaveStatus.PERM_SAVED:
-        send.delay(telemetry.json())
     return JSONResponse({'status': 'success'})
 
 
