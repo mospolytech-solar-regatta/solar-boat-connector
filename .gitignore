@@ -5,3 +5,4 @@ celerybeat-schedule*
 background/config/local*
 solar-tester
 !/.idea/runConfigurations
+venv
