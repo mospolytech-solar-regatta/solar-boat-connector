@@ -1,5 +1,5 @@
-import aioredis
-from aioredis import Redis
+import redis.asyncio as redis
+from redis import Redis
 from store.config import RedisConfig
 import asyncio
 
@@ -7,8 +7,7 @@ import asyncio
 class RedisDB:
     def __init__(self, cfg: RedisConfig):
         self.config = cfg
-        self.pool = aioredis.ConnectionPool.from_url(cfg.dsn, max_connections=10)
-        self.redis = self._create_redis()
+        self.redis: Redis = redis.from_url(cfg.dsn, decode_responses=True)
 
     def __del__(self):
         self._stop_connection()
@@ -18,10 +17,6 @@ class RedisDB:
 
     def _stop_connection(self):
         asyncio.run(self.redis.close())
-
-    def _create_redis(self) -> Redis:
-        redis = aioredis.Redis(connection_pool=self.pool)
-        return redis
 
     # pylint: disable=redefined-builtin
     @staticmethod

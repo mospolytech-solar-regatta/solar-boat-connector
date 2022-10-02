@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 import geopy.distance
 
-from aioredis import Redis
+from redis import Redis
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-import constants
+from app import constants
 from app.models.telemetry import Telemetry as pgTelemetry
-# pylint: disable=redefined-builtin
+
 from store.redis import RedisDB
 
 
@@ -78,6 +78,7 @@ class State(BaseModel):
         prev_coord = (prev.position_lat, prev.position_lng)
         delta = (self.created_at - prev.created_at).seconds / 3600
         distance = geopy.distance.geodesic(cur_coord, prev_coord).km
+
         self.speed = distance / max(delta, 1)
         self.distance_travelled = prev.distance_travelled + distance
         self.laps = prev.laps
@@ -152,7 +153,6 @@ class State(BaseModel):
         prev = await State.get_current_state(db)
         prev.distance_travelled = 0
         await prev._save_redis(db)
-
 
     @staticmethod
     async def remove_point(db: Redis):

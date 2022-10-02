@@ -1,5 +1,9 @@
 import json
 import asyncio
+
+import async_timeout
+import redis
+
 from app.config.app_config import AppConfig
 from app.models.request_models import Telemetry
 from app.models.serial import SerialConfig, serial_config_key
@@ -17,10 +21,10 @@ class Listener:
     async def listen(self):
         await self.pubsub.subscribe(**{self.config.config.redis_telemetry_channel: self.listen_telemetry,
                                        self.config.config.redis_config_apply_channel: self.listen_config})
-        self.task = asyncio.create_task(self.pubsub.run())
+        self.task = asyncio.create_task(self.run(self.pubsub))
 
     def listen_telemetry(self, msg):
-        data = json.loads(msg['data'].decode('UTF-8'))
+        data = json.loads(msg['data'])
         telemetry = Telemetry(**data)
         redis = self.redis.get_redis()
         session = self.db.get_session()
@@ -28,7 +32,7 @@ class Listener:
         task.add_done_callback(lambda ctx: (asyncio.create_task(redis.close()), session.close()))
 
     def listen_config(self, msg):
-        data = json.loads(msg['data'].decode('UTF-8'))
+        data = json.loads(msg['data'])
         cfg = SerialConfig(**data['config'])
         redis = self.redis.get_redis()
         task = asyncio.create_task(redis.set(serial_config_key, cfg.json()))
@@ -36,4 +40,14 @@ class Listener:
 
     async def stop(self):
         self.task.cancel()
-        await self.task
+
+    async def run(self, channel: redis.client.PubSub):
+        while True:
+            try:
+                async with async_timeout.timeout(1):
+                    message = await channel.get_message(ignore_subscribe_messages=True, timeout=1)
+                    if message is not None:
+                        print(f"(Reader) Message Received: {message}")
+                    await asyncio.sleep(0.01)
+            except asyncio.TimeoutError:
+                pass
