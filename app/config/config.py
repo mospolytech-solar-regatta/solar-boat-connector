@@ -11,7 +11,6 @@ class Config(BaseSettings):
     redis_telemetry_channel: str
     redis_config_channel: str
     redis_config_apply_channel: str
-    celery_config_module: str
     allow_origin: str = '["*"]'
     origin: str = "http://localhost:8000"
 

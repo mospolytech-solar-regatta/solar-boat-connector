@@ -22,7 +22,6 @@ fileConfig(config.config_file_name)
 target_metadata = Base.metadata
 
 
-
 def get_url():
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "")
