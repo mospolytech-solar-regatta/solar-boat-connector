@@ -1,4 +1,4 @@
-from sqlalchemy import Column
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import Session
 from sqlalchemy.types import DateTime, Integer, Float
 
@@ -24,6 +24,7 @@ class Telemetry(Base):
     laps = Column(Integer)
     lap_point_lat = Column(Float)
     lap_point_lng = Column(Float)
+    lap_id = Column(Integer, ForeignKey("laps.id"))
 
     def save(self, session: Session):
         session.add(self)
