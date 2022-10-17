@@ -9,9 +9,10 @@ class Race(Base):
 
     id = Column(Integer, primary_key=True)
     start_time = Column(DateTime)
+    finish_time = Column(DateTime)
     boat_name = Column(String)
     start_pos_lat = Column(Float)
-    end_pos_lng = Column(Float)
+    start_pos_lng = Column(Float)
 
     def save(self, session: Session):
         session.add(self)
