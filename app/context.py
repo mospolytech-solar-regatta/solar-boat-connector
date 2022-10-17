@@ -1,8 +1,21 @@
-from app.config.app_config import BaseConfig, AppConfig
-from background.listener import Listener
+import asyncio
 
-app_config = BaseConfig()
+from sqlalchemy.orm import Session
+from store.redis_db import RedisContext
+
+app_config = None
 listener = None
+
+
+class AppContext:
+    def __init__(self, cfg):
+        self.redis = RedisContext(cfg.redis)
+        self.session: Session = cfg.db.get_session()
+
+    async def close(self):
+        await self.redis.close()
+        self.session.commit()
+        self.session.close()
 
 
 def set_config(cfg):
@@ -12,14 +25,3 @@ def set_config(cfg):
 
 def get_config():
     return app_config
-
-
-def create_listener(config: AppConfig):
-    global listener
-    listener = Listener(config)
-    return listener
-
-
-def get_listener():
-    global listener
-    return listener

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime, Float, ForeignKey
-from sqlalchemy.orm import Session
 
+from app.context import AppContext
 from store.postgres import Base
 
 
@@ -13,6 +13,5 @@ class Lap(Base):
     distance = Column(Float)
     race_id = Column(Integer, ForeignKey("races.id"))
 
-    def save(self, session: Session):
-        session.add(self)
-        session.commit()
+    def save(self, ctx: AppContext):
+        ctx.session.add(self)

@@ -4,7 +4,7 @@ psycopg2==2.9.3
 pydantic==1.9.0
 pyserial==3.5
 python-dotenv==0.20.0
-redis==4.2.2
+redis==4.3.4
 requests==2.27.1
 SQLAlchemy==1.4.35
 uvicorn==0.17.6

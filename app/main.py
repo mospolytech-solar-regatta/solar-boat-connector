@@ -1,16 +1,18 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import context
+from background.listener import create_listener, get_listener
 from app.config.app_config import AppConfig
 from app.config.config import Config
-from app.routers import state, serial, actions
+from app.routers import state, serial, actions, websockets
 
 app = FastAPI()
 
 app.include_router(state.router)
 app.include_router(serial.router)
 app.include_router(actions.router)
+app.include_router(websockets.router)
 
 
 @app.on_event("startup")
@@ -25,13 +27,13 @@ async def startup_event():
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    listener = context.create_listener(cfg)
+    listener = create_listener()
     await listener.listen()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await context.get_listener().stop()
+    await get_listener().stop()
 
 
 @app.get("/")
