@@ -2,15 +2,10 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import geopy.distance
-
-from redis import Redis
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
 from app import constants
+from app.context import AppContext
 from app.models.telemetry import Telemetry as pgTelemetry
-
-from store.redis import RedisDB
 
 
 @dataclass
@@ -32,9 +27,9 @@ class Telemetry(BaseModel):
     position_lat: float
     position_lng: float
 
-    async def save_current_state(self, db: Redis, session: Session):
-        state = await State.from_telemetry(self, db)
-        await state.save(db, session)
+    async def save_current_state(self, ctx: AppContext):
+        state = await State.from_telemetry(self, ctx)
+        await state.save(ctx)
 
 
 class PointSet(BaseModel):
@@ -63,15 +58,15 @@ class State(BaseModel):
         orm_mode = True
 
     @staticmethod
-    async def get_current_state(db: Redis):
-        cur = await RedisDB.get(db, constants.CURRENT_STATE_KEY)
+    async def get_current_state(ctx: AppContext):
+        cur = await ctx.redis.get(constants.CURRENT_STATE_KEY)
         if cur is None:
             raise FileNotFoundError("Key not found")
         return State(**json.loads(cur))
 
     @staticmethod
-    def get_pg_state(session: Session):
-        return pgTelemetry.get_last(session)
+    def get_pg_state(ctx: AppContext):
+        return pgTelemetry.get_last(ctx)
 
     def update_from_previous(self, prev):
         cur_coord = (self.position_lat, self.position_lng)
@@ -97,74 +92,73 @@ class State(BaseModel):
             self.laps += 1
 
     @staticmethod
-    async def from_telemetry(telemetry: Telemetry, db: Redis):
+    async def from_telemetry(telemetry: Telemetry, ctx: AppContext):
         res = State(**telemetry.dict())
 
         try:
-            prev = await State.get_current_state(db)
+            prev = await State.get_current_state(ctx)
         except FileNotFoundError:
             return res
         res.update_from_previous(prev)
         return res
 
-    async def _save_redis(self, db: Redis):
-        await RedisDB.set(db, constants.CURRENT_STATE_KEY, self.json())
+    async def _save_redis(self, ctx: AppContext):
+        await ctx.redis.set(constants.CURRENT_STATE_KEY, self.json())
 
-    def _save_pg(self, session: Session):
-        pgTelemetry.save_from_schema(self, session)
-        session.commit()
+    def _save_pg(self, ctx: AppContext):
+        pgTelemetry.save_from_schema(self, ctx)
 
-    async def save(self, db: Redis, session: Session):
+    async def save(self, ctx: AppContext):
         try:
-            prev = await State.get_current_state(db)
+            prev = await State.get_current_state(ctx)
         except FileNotFoundError:
-            await self._save_redis(db)
-            self._save_pg(session)
+            await self._save_redis(ctx)
+            self._save_pg(ctx)
             return TelemetrySaveStatus.PERM_SAVED
 
         if prev.created_at < self.created_at:
-            await self._save_redis(db)
-        prev = State.get_pg_state(session)
+            await self._save_redis(ctx)
+        prev = State.get_pg_state(ctx)
         if prev is None or self.created_at - prev.created_at > timedelta(seconds=constants.TELEMETRY_REMEMBER_DELAY):
-            self._save_pg(session)
+            self._save_pg(ctx)
             return TelemetrySaveStatus.PERM_SAVED
         else:
             return TelemetrySaveStatus.TEMP_SAVED
 
     @staticmethod
-    async def set_point(db: Redis) -> PointSet:
-        prev = await State.get_current_state(db)
+    async def set_point(ctx: AppContext) -> PointSet:
+        prev = await State.get_current_state(ctx)
         prev.lap_point_lng = prev.position_lng
         prev.lap_point_lat = prev.position_lat
         prev.laps = 0
-        await prev._save_redis(db)
+        await prev._save_redis(ctx)
         return PointSet(lng=prev.lap_point_lng, lat=prev.lap_point_lat)
 
     @staticmethod
-    async def reset_point(db: Redis) -> None:
-        prev = await State.get_current_state(db)
+    async def reset_point(ctx: AppContext) -> None:
+        prev = await State.get_current_state(ctx)
         prev.lap_point_lng = None
         prev.lap_point_lat = None
         prev.laps = 0
-        await prev._save_redis(db)
+        await prev._save_redis(ctx)
 
     @staticmethod
-    async def reset_distance(db: Redis) -> None:
-        prev = await State.get_current_state(db)
+    async def reset_distance(ctx: AppContext) -> None:
+        prev = await State.get_current_state(ctx)
         prev.distance_travelled = 0
-        await prev._save_redis(db)
+        await prev._save_redis(ctx)
 
     @staticmethod
-    async def remove_point(db: Redis):
-        prev = await State.get_current_state(db)
+    async def remove_point(ctx: AppContext):
+        prev = await State.get_current_state(ctx)
         prev.lap_point_lng = None
         prev.lap_point_lat = None
         prev.laps = 0
-        await prev._save_redis(db)
+        await prev._save_redis(ctx)
         return PointSet(lng=prev.lap_point_lng, lat=prev.lap_point_lat)
 
     @staticmethod
-    async def clear_distance(db: Redis):
-        prev = await State.get_current_state(db)
+    async def clear_distance(ctx: AppContext):
+        prev = await State.get_current_state(ctx)
         prev.distance_travelled = 0
-        await prev._save_redis(db)
+        await prev._save_redis(ctx)

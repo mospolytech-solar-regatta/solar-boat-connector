@@ -17,7 +17,11 @@ class PostgresConfig(BaseModel):
 
 class RedisConfig(BaseModel):
     dsn: str
+    telemetry_channel: str
+    config_apply_channel: str
+    config_channel: str
 
     @staticmethod
     def from_app_config(cfg: Config):
-        return RedisConfig(dsn=cfg.redis_dsn)
+        return RedisConfig(dsn=cfg.redis_dsn, telemetry_channel=cfg.redis_telemetry_channel,
+                           config_apply_channel=cfg.redis_config_apply_channel, config_channel=cfg.redis_config_channel)

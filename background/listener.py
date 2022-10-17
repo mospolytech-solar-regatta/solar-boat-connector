@@ -1,47 +1,53 @@
 import json
 import asyncio
+import logging
+import traceback
 
 import async_timeout
 import redis
 
-from app.config.app_config import AppConfig
+from redis.asyncio.client import PubSub
+from app.context import AppContext
 from app.models.request_models import Telemetry
-from app.models.serial import SerialConfig, serial_config_key
+from app.models.serial import SerialConfig
+from app.dependencies import get_context
+
+listener = None
 
 
 class Listener:
 
-    def __init__(self, config: AppConfig):
-        self.config = config
-        self.redis = config.redis
-        self.db = config.db
+    def __init__(self):
         self.task = None
-        self.pubsub = self.redis.get_redis().pubsub()
+        self.pubsub = None
+
+    async def get_context(self):
+        return await get_context().__anext__()
 
     async def listen(self):
-        await self.pubsub.subscribe(**{self.config.config.redis_telemetry_channel: self.listen_telemetry,
-                                       self.config.config.redis_config_apply_channel: self.listen_config})
+        ctx = await self.get_context()
+        redis = ctx.redis
+        self.pubsub = await redis.pubsub()
+        await self.pubsub.subscribe(**{redis.config.telemetry_channel: self.listen_telemetry,
+                                       redis.config.config_apply_channel: self.listen_config})
         self.task = asyncio.create_task(self.run(self.pubsub))
 
-    def listen_telemetry(self, msg):
+    async def listen_telemetry(self, msg):
         data = json.loads(msg['data'])
         telemetry = Telemetry(**data)
-        redis = self.redis.get_redis()
-        session = self.db.get_session()
-        task = asyncio.create_task(telemetry.save_current_state(redis, session))
-        task.add_done_callback(lambda ctx: (asyncio.create_task(redis.close()), session.close()))
+        ctx = await self.get_context()
+        asyncio.create_task(telemetry.save_current_state(ctx))
 
-    def listen_config(self, msg):
+    async def listen_config(self, msg):
         data = json.loads(msg['data'])
         cfg = SerialConfig(**data['config'])
-        redis = self.redis.get_redis()
-        task = asyncio.create_task(redis.set(serial_config_key, cfg.json()))
-        task.add_done_callback(lambda ctx: (asyncio.create_task(redis.close())))
+        ctx = await self.get_context()
+        asyncio.create_task(cfg.update(ctx))
 
     async def stop(self):
         self.task.cancel()
 
-    async def run(self, channel: redis.client.PubSub):
+    async def run(self, channel: PubSub):
         while True:
             try:
                 async with async_timeout.timeout(1):
@@ -51,3 +57,17 @@ class Listener:
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
                 pass
+            except Exception as exc:
+                logging.log(logging.ERROR, exc)
+                traceback.print_exc()
+
+
+def create_listener():
+    global listener
+    listener = Listener()
+    return listener
+
+
+def get_listener():
+    global listener
+    return listener

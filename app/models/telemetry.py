@@ -2,6 +2,7 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import Session
 from sqlalchemy.types import DateTime, Integer, Float
 
+from app.context import AppContext
 from store.postgres import Base
 
 
@@ -26,16 +27,15 @@ class Telemetry(Base):
     lap_point_lng = Column(Float)
     lap_id = Column(Integer, ForeignKey("laps.id"))
 
-    def save(self, session: Session):
-        session.add(self)
-        session.commit()
+    def save(self, ctx: AppContext):
+        ctx.session.add(self)
 
     @staticmethod
-    def save_from_schema(schema, session: Session):
+    def save_from_schema(schema, ctx: AppContext):
         telemetry = Telemetry(**schema.dict())
-        telemetry.save(session)
+        telemetry.save(ctx)
 
     @staticmethod
-    def get_last(session: Session):
-        res = session.query(Telemetry).order_by(Telemetry.id.desc()).first()
+    def get_last(ctx: AppContext):
+        res = ctx.session.query(Telemetry).order_by(Telemetry.id.desc()).first()
         return res

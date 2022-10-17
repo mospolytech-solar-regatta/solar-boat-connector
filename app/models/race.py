@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, DateTime, String, Float
 from sqlalchemy.orm import Session
 
+from app.context import AppContext
 from store.postgres import Base
 
 
@@ -14,6 +15,5 @@ class Race(Base):
     start_pos_lat = Column(Float)
     start_pos_lng = Column(Float)
 
-    def save(self, session: Session):
-        session.add(self)
-        session.commit()
+    def save(self, ctx: AppContext):
+        ctx.session.add(self)

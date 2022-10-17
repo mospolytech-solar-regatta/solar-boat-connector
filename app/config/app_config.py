@@ -1,6 +1,6 @@
 from app.config.config import Config
 from store.postgres import PostgresDB, PostgresConfig
-from store.redis import RedisDB, RedisConfig
+from store.redis_db import RedisDB, RedisConfig
 
 
 class BaseConfig:
