@@ -5,6 +5,7 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
+from app.config.config import Config
 from app.models.lap import Lap
 from app.models.race import Race
 from app.models.request_models import *
@@ -27,11 +28,10 @@ target_metadata = Base.metadata
 
 
 def get_url():
-    user = os.getenv("POSTGRES_USER", "postgres")
-    password = os.getenv("POSTGRES_PASSWORD", "")
-    server = os.getenv("POSTGRES_SERVER", "db")
-    db = os.getenv("POSTGRES_DB", "public")
-    return f"postgresql://{user}:{password}@{server}/{db}"
+    cfg = Config()
+    return f"postgresql://{cfg.postgres_user}:{cfg.postgres_password}@" \
+           f"{cfg.postgres_server}:{cfg.postgres_port}/{cfg.postgres_db}"
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
