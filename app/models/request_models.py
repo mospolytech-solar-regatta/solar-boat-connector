@@ -55,7 +55,7 @@ class State(BaseModel):
     laps: int = 0
     lap_point_lat: float = None
     lap_point_lng: float = None
-    race_id: Optional[int]
+    race_id: int = None
 
     class Config:
         orm_mode = True

@@ -28,5 +28,17 @@ class Race(Base):
         # создать_нулевой_круг()
         return new_race
 
+    @staticmethod
+    async def get_current_race(ctx: AppContext):
+        race = ctx.session.query(Race).order_by(Race.id.desc()).first()
+        return race
+
     def save(self, ctx: AppContext):
         ctx.session.add(self)
+
+    def stop(self, ctx: AppContext):
+        self.finish_time = datetime.datetime.now()
+        self.save(ctx)
+        cur_state: State = await State.get_current_state(ctx)
+        cur_state.race_id = None
+        # закончить_круг()
