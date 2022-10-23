@@ -36,7 +36,7 @@ class Race(Base):
     def save(self, ctx: AppContext):
         ctx.session.add(self)
 
-    def stop(self, ctx: AppContext):
+    async def stop(self, ctx: AppContext):
         self.finish_time = datetime.datetime.now()
         self.save(ctx)
         cur_state: State = await State.get_current_state(ctx)

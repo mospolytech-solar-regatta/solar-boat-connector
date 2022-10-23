@@ -16,4 +16,4 @@ async def start_race(ctx: AppContext = Depends(get_context)):
 @router.post("/stop")
 async def stop_race(ctx: AppContext = Depends(get_context)):
     cur_race: Race = await Race.get_current_race(ctx)
-    cur_race.stop(ctx)
+    await cur_race.stop(ctx)
