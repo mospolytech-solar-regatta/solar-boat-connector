@@ -3,6 +3,7 @@ import datetime
 from sqlalchemy import Column, Integer, DateTime, String, Float
 
 from app.context import AppContext
+from app.models.lap import Lap
 from app.models.request_models import State
 from store.postgres import Base
 
@@ -41,4 +42,4 @@ class Race(Base):
         self.save(ctx)
         cur_state: State = await State.get_current_state(ctx)
         cur_state.race_id = None
-        # закончить_круг()
+        Lap.get_current_lap(ctx).finish(ctx)
