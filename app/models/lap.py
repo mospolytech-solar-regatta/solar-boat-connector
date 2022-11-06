@@ -32,5 +32,5 @@ class Lap(Base):
 
     @staticmethod
     def get_current_lap(ctx: AppContext):
-        lap = ctx.session.query(Lap).order_by(Lap.id.desc()).first()
+        lap = ctx.session.query(Lap).order_by(Lap.start_time.desc()).first()
         return lap
