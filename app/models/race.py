@@ -24,7 +24,7 @@ class Race(Base):
             start_time=datetime.datetime.now(),
             start_pos_lat=cur_state.position_lat,
             start_pos_lng=cur_state.position_lng)
-        cur_state.race_id = new_race.id
+        new_race.save(ctx)
         # создать_нулевой_круг()
         return new_race
 
