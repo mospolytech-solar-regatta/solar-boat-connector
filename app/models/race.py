@@ -26,12 +26,12 @@ class Race(Base):
             start_pos_lat=cur_state.position_lat,
             start_pos_lng=cur_state.position_lng)
         cur_state.race_id = new_race.id
-        # создать_нулевой_круг()
+        Lap.create_lap(ctx)
         return new_race
 
     @staticmethod
     async def get_current_race(ctx: AppContext):
-        race = ctx.session.query(Race).order_by(Race.id.desc()).first()
+        race = ctx.session.query(Race).order_by(Race.start_time.desc()).first()
         return race
 
     def save(self, ctx: AppContext):
