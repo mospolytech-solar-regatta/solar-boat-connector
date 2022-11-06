@@ -96,7 +96,8 @@ class State(BaseModel):
             self.laps += 1
             prev_lap = Lap.get_current_lap(ctx)
             prev_lap.finish(ctx)
-            await Lap.create_lap(ctx, prev_lap.lap_number)
+            new_lap = await Lap.create_lap(ctx, prev_lap.race_id, prev_lap.lap_number)
+            self.lap_id = new_lap.id
 
     @staticmethod
     async def from_telemetry(telemetry: Telemetry, ctx: AppContext):
