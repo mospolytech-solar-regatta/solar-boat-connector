@@ -22,7 +22,7 @@ class Lap(Base):
         ctx.session.add(self)
 
     @staticmethod
-    def create_lap(ctx: AppContext, last_lap_number=-1):
+    async def create_lap(ctx: AppContext, last_lap_number=-1):
         cur_race = await Race.get_current_race(ctx)
         new_lap = Lap(race_id=cur_race.id, start_time=datetime.datetime.now(), lap_number=last_lap_number + 1)
         new_lap.save(ctx)

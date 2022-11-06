@@ -26,7 +26,7 @@ class Race(Base):
             start_pos_lat=cur_state.position_lat,
             start_pos_lng=cur_state.position_lng)
         new_race.save(ctx)
-        Lap.create_lap(ctx)
+        await Lap.create_lap(ctx)
         return new_race
 
     @staticmethod
