@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from app import constants
 from app.context import AppContext
+from app.models.lap import Lap
 from app.models.telemetry import Telemetry as pgTelemetry
 
 
@@ -54,6 +55,7 @@ class State(BaseModel):
     laps: int = 0
     lap_point_lat: float = None
     lap_point_lng: float = None
+    lap_id: int = None
 
     class Config:
         orm_mode = True
@@ -69,7 +71,7 @@ class State(BaseModel):
     def get_pg_state(ctx: AppContext):
         return pgTelemetry.get_last(ctx)
 
-    def update_from_previous(self, prev):
+    def update_from_previous(self, prev, ctx: AppContext):
         cur_coord = (self.position_lat, self.position_lng)
         prev_coord = (prev.position_lat, prev.position_lng)
         delta = (self.created_at - prev.created_at).seconds / 3600
@@ -80,10 +82,11 @@ class State(BaseModel):
         self.laps = prev.laps
         self.lap_point_lat = prev.lap_point_lat
         self.lap_point_lng = prev.lap_point_lng
+        self.lap_id = prev.lap_id
         if self.lap_point_lng is not None and self.lap_point_lat is not None:
-            self.count_laps(prev)
+            self.count_laps(prev, ctx)
 
-    def count_laps(self, prev):
+    def count_laps(self, prev, ctx: AppContext):
         lap_coord = (self.lap_point_lat, self.lap_point_lng)
         prev_coord = (prev.position_lat, prev.position_lng)
         cur_coord = (self.position_lat, self.position_lng)
@@ -91,6 +94,9 @@ class State(BaseModel):
         cur_dist = geopy.distance.geodesic(cur_coord, lap_coord).m
         if prev_dist > constants.LAP_ADD_RADIUS_METERS >= cur_dist:
             self.laps += 1
+            lap = Lap.get_current_lap(ctx)
+            lap.finish(ctx)
+            Lap.create_lap(ctx, lap.lap_number)
 
     @staticmethod
     async def from_telemetry(telemetry: Telemetry, ctx: AppContext):
@@ -100,7 +106,7 @@ class State(BaseModel):
             prev = await State.get_current_state(ctx)
         except FileNotFoundError:
             return res
-        res.update_from_previous(prev)
+        res.update_from_previous(prev, ctx)
         return res
 
     async def _save_redis(self, ctx: AppContext):
