@@ -55,7 +55,6 @@ class State(BaseModel):
     laps: int = 0
     lap_point_lat: float = None
     lap_point_lng: float = None
-    race_id: int = None
     lap_id: int = None
 
     class Config:
@@ -83,7 +82,6 @@ class State(BaseModel):
         self.laps = prev.laps
         self.lap_point_lat = prev.lap_point_lat
         self.lap_point_lng = prev.lap_point_lng
-        self.race_id = prev.race_id
         self.lap_id = prev.lap_id
         if self.lap_point_lng is not None and self.lap_point_lat is not None:
             self.count_laps(prev, ctx)
@@ -98,7 +96,7 @@ class State(BaseModel):
             self.laps += 1
             lap = Lap.get_current_lap(ctx)
             lap.finish(ctx)
-            Lap.create_lap(self.race_id, ctx)
+            Lap.create_lap(ctx, lap.lap_number)
 
     @staticmethod
     async def from_telemetry(telemetry: Telemetry, ctx: AppContext):

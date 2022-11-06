@@ -3,7 +3,8 @@ import datetime
 from sqlalchemy import Column, Integer, DateTime, Float, ForeignKey
 
 from app.context import AppContext
-from app.dependencies import get_context
+from app.models.race import Race
+from app.models.request_models import State
 from store.postgres import Base
 
 
@@ -14,15 +15,19 @@ class Lap(Base):
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     distance = Column(Float)
+    lap_number = Column(Integer)
     race_id = Column(Integer, ForeignKey("races.id"))
 
     def save(self, ctx: AppContext):
         ctx.session.add(self)
 
     @staticmethod
-    def create_lap(race_id, ctx: AppContext):
-        new_lap = Lap(race_id=race_id, start_time=datetime.datetime.now())
+    def create_lap(ctx: AppContext, last_lap_number=-1):
+        cur_race = await Race.get_current_race(ctx)
+        new_lap = Lap(race_id=cur_race.id, start_time=datetime.datetime.now(), lap_number=last_lap_number + 1)
         new_lap.save(ctx)
+        cur_state = await State.get_current_state(ctx)
+        cur_state.lap_id = new_lap.id
         return new_lap
 
     def finish(self, ctx: AppContext):
