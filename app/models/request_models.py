@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 import geopy.distance
 from pydantic import BaseModel
-from pydantic.typing import Optional
 
 from app import constants
 from app.context import AppContext
@@ -55,7 +54,6 @@ class State(BaseModel):
     laps: int = 0
     lap_point_lat: float = None
     lap_point_lng: float = None
-    race_id: int = None
 
     class Config:
         orm_mode = True
@@ -82,7 +80,6 @@ class State(BaseModel):
         self.laps = prev.laps
         self.lap_point_lat = prev.lap_point_lat
         self.lap_point_lng = prev.lap_point_lng
-        self.race_id = prev.race_id
         if self.lap_point_lng is not None and self.lap_point_lat is not None:
             self.count_laps(prev)
 
