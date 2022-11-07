@@ -40,7 +40,7 @@ class Race(Base):
     async def stop(self, ctx: AppContext):
         self.finish_time = datetime.datetime.now()
         self.save(ctx)
-        Lap.get_current_lap(ctx).finish(ctx)
         cur_state = await State.get_current_state(ctx)
+        Lap.get_current_lap(ctx).finish(cur_state.distance_travelled, ctx)
         cur_state.lap_id = None
         cur_state.reset_point(ctx)
