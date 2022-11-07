@@ -25,9 +25,9 @@ class Lap(Base):
         new_lap.save(ctx)
         return new_lap
 
-    def finish(self, ctx: AppContext):
+    def finish(self, distance, ctx: AppContext):
         self.end_time = datetime.datetime.now()
-        # self.distance =
+        self.distance = distance
         self.save(ctx)
 
     @staticmethod
