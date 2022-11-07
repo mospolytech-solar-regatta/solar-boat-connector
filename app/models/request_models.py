@@ -95,9 +95,10 @@ class State(BaseModel):
         if prev_dist > constants.LAP_ADD_RADIUS_METERS >= cur_dist:
             self.laps += 1
             prev_lap = Lap.get_current_lap(ctx)
-            prev_lap.finish(self.distance_travelled, ctx)
-            new_lap = await Lap.create_lap(ctx, prev_lap.race_id, prev_lap.lap_number)
-            self.lap_id = new_lap.id
+            if prev_lap:
+                prev_lap.finish(self.distance_travelled, ctx)
+                new_lap = await Lap.create_lap(ctx, prev_lap.race_id, prev_lap.lap_number)
+                self.lap_id = new_lap.id
 
     @staticmethod
     async def from_telemetry(telemetry: Telemetry, ctx: AppContext):
