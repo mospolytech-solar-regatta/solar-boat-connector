@@ -32,7 +32,7 @@ class Race(Base):
     @staticmethod
     async def get_current_race(ctx: AppContext):
         race = ctx.session.query(Race).order_by(Race.start_time.desc()).first()
-        return race
+        return race if race and not race.finish_time else None
 
     def save(self, ctx: AppContext):
         ctx.session.add(self)
@@ -42,5 +42,3 @@ class Race(Base):
         self.save(ctx)
         cur_state = await State.get_current_state(ctx)
         Lap.get_current_lap(ctx).finish(cur_state.distance_travelled, ctx)
-        cur_state.lap_id = None
-        cur_state.reset_point(ctx)
