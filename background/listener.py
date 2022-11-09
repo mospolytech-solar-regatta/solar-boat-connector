@@ -1,3 +1,4 @@
+import functools
 import json
 import asyncio
 import logging
@@ -36,15 +37,15 @@ class Listener:
         data = json.loads(msg['data'])
         telemetry = Telemetry(**data)
         ctx = await self.get_context()
-        asyncio.create_task(telemetry.save_current_state(ctx))
-        await ctx.close()
+        task = asyncio.create_task(telemetry.save_current_state(ctx))
+        task.add_done_callback(lambda context: asyncio.create_task(AppContext.done_callback(ctx)))
 
     async def listen_config(self, msg):
         data = json.loads(msg['data'])
         cfg = SerialConfig(**data['config'])
         ctx = await self.get_context()
-        asyncio.create_task(cfg.update(ctx))
-        await ctx.close()
+        task = asyncio.create_task(cfg.update(ctx))
+        task.add_done_callback(lambda context: asyncio.create_task(AppContext.done_callback(ctx)))
 
     async def stop(self):
         self.task.cancel()

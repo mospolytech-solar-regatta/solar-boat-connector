@@ -1,6 +1,7 @@
 import datetime
 
 from sqlalchemy import Column, Integer, DateTime, String, Float
+from sqlalchemy.orm import relationship
 
 from app.context import AppContext
 from app.models.lap import Lap
@@ -17,6 +18,8 @@ class Race(Base):
     boat_name = Column(String)
     start_pos_lat = Column(Float)
     start_pos_lng = Column(Float)
+    laps = relationship("Lap", back_populates="race")
+
 
     @staticmethod
     async def start_new_race(ctx: AppContext):
@@ -26,7 +29,7 @@ class Race(Base):
             start_pos_lat=cur_state.position_lat,
             start_pos_lng=cur_state.position_lng)
         new_race.save(ctx)
-        await Lap.create_lap(ctx, new_race.id)
+        await Lap.create_lap(ctx, new_race)
         return new_race
 
     @staticmethod
