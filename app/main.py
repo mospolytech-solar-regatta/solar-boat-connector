@@ -5,7 +5,7 @@ from app import context
 from background.listener import create_listener, get_listener
 from app.config.app_config import AppConfig
 from app.config.config import Config
-from app.routers import state, serial, actions, websockets
+from app.routers import state, serial, actions, websockets, race
 
 app = FastAPI()
 
@@ -13,6 +13,7 @@ app.include_router(state.router)
 app.include_router(serial.router)
 app.include_router(actions.router)
 app.include_router(websockets.router)
+app.include_router(race.router)
 
 
 @app.on_event("startup")

@@ -17,6 +17,10 @@ class AppContext:
         self.session.commit()
         self.session.close()
 
+    @staticmethod
+    async def done_callback(ctx, *args):
+        await ctx.close()
+
 
 def set_config(cfg):
     global app_config
