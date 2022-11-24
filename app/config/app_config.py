@@ -18,9 +18,9 @@ class AppConfig(BaseConfig):
         self._create_redis()
 
     def _create_db(self):
-        cfg = PostgresConfig.from_app_config(self.config)
+        cfg = PostgresConfig()
         self.db = PostgresDB(cfg)
 
     def _create_redis(self):
-        cfg = RedisConfig.from_app_config(self.config)
+        cfg = RedisConfig()
         self.redis = RedisDB(cfg)
