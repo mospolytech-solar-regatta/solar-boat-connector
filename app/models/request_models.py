@@ -31,7 +31,8 @@ class Telemetry(BaseModel):
 
     async def save_current_state(self, ctx: AppContext):
         state = await State.from_telemetry(self, ctx)
-        await state.save(ctx)
+        if await state.save(ctx) == TelemetrySaveStatus.PERM_SAVED:
+            await ctx.redis.publish("land_queue", self.json())
 
 
 class PointSet(BaseModel):
