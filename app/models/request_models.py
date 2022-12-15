@@ -35,15 +35,8 @@ class Telemetry(BaseModel):
         state = await State.from_telemetry(self, ctx)
         status = await state.save(ctx)
         if status == TelemetrySaveStatus.PERM_SAVED:
-            data = self.generate_land_data()
-            await ctx.redis.publish("land_queue", data.json())
-
-    def generate_land_data(self):
-        data = LandData()
-        data.priority = LandData.priority.low
-        data.data = self.json()
-        data.created_at = datetime.now()
-        return data
+            data = LandData.from_telemetry(self)
+            await ctx.redis.publish(ctx.redis.config.land_queue_channel, data.json())
 
 
 class LandData(BaseModel):
@@ -55,6 +48,14 @@ class LandData(BaseModel):
     created_at: datetime
     id: int
     data: str
+
+    @staticmethod
+    def from_telemetry(telemetry: Telemetry):
+        data = LandData()
+        data.priority = LandData.priority.low
+        data.data = telemetry.json()
+        data.created_at = datetime.now()
+        return data
 
 
 class PointSet(BaseModel):
