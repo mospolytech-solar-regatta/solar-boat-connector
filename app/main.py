@@ -5,6 +5,7 @@ from app import context
 from background.listener import create_listener, get_listener
 from app.config.app_config import AppConfig
 from app.config.config import Config
+from store.migrator import AlembicMigrator
 from app.routers import state, serial, actions, websockets, race
 
 app = FastAPI()
@@ -21,6 +22,8 @@ async def startup_event():
     cfg = AppConfig(Config())
     context.set_config(cfg)
     origins = cfg.config.allow_origin
+    migrator = AlembicMigrator()
+    migrator.migrate_to_latest()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
@@ -30,7 +33,6 @@ async def startup_event():
     )
     listener = create_listener()
     await listener.listen()
-
 
 @app.on_event("shutdown")
 async def shutdown_event():
