@@ -18,6 +18,7 @@ class RedisConfig(BaseSettings):
     telemetry_channel: str
     config_apply_channel: str
     config_channel: str
+    land_queue_channel: str
 
     class Config:
         env_prefix = 'redis_'

@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from enum import IntEnum
+
 import geopy.distance
 from pydantic import BaseModel
 
@@ -31,7 +33,29 @@ class Telemetry(BaseModel):
 
     async def save_current_state(self, ctx: AppContext):
         state = await State.from_telemetry(self, ctx)
-        await state.save(ctx)
+        status = await state.save(ctx)
+        if status == TelemetrySaveStatus.PERM_SAVED:
+            data = LandData.from_telemetry(self)
+            await ctx.redis.publish(ctx.redis.config.land_queue_channel, data.json())
+
+
+class LandData(BaseModel):
+    class Priority(IntEnum):
+        low = 0
+        high = 1
+
+    priority: Priority
+    created_at: datetime
+    id: int
+    data: str
+
+    @staticmethod
+    def from_telemetry(telemetry: Telemetry):
+        data = LandData()
+        data.priority = LandData.priority.low
+        data.data = telemetry.json()
+        data.created_at = datetime.now()
+        return data
 
 
 class PointSet(BaseModel):
