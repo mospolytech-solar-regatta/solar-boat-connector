@@ -1,9 +1,9 @@
+import json
 from typing import Optional
 
 from pydantic import BaseModel
-from redis.client import Redis
 
-from app.context import AppContext
+from app.BoatAPI.context import AppContext
 
 serial_config_key = "serial_config"
 
@@ -22,6 +22,7 @@ class SerialConfig(BaseModel):
     async def update(self, ctx: AppContext):
         await ctx.redis.set(serial_config_key, self.json())
 
-
-async def get_serial_config(ctx: AppContext):
-    return await ctx.redis.get(serial_config_key)
+    @staticmethod
+    async def get(ctx: AppContext) -> "SerialConfig":
+        res = await ctx.redis.get(serial_config_key)
+        return SerialConfig(**json.loads(res))

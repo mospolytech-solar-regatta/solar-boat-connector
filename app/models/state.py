@@ -1,12 +1,11 @@
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import Session
 from sqlalchemy.types import DateTime, Integer, Float
 
-from app.context import AppContext
+from app.BoatAPI.context import AppContext
 from store.postgres import Base
 
 
-class Telemetry(Base):
+class State(Base):
     __tablename__ = 'telemetry'
 
     id = Column(Integer, primary_key=True)
@@ -32,10 +31,10 @@ class Telemetry(Base):
 
     @staticmethod
     def save_from_schema(schema, ctx: AppContext):
-        telemetry = Telemetry(**schema.dict())
+        telemetry = State(**schema.dict())
         telemetry.save(ctx)
 
     @staticmethod
     def get_last(ctx: AppContext):
-        res = ctx.session.query(Telemetry).order_by(Telemetry.id.desc()).first()
+        res = ctx.session.query(State).order_by(State.id.desc()).first()
         return res

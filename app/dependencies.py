@@ -1,14 +1,22 @@
-from app import context
-from app.config.app_config import BaseConfig
-from app.context import AppContext
+from app.BoatAPI import get_app, get_controllers
+from app.BoatAPI.context import AppContext
 
 
 async def get_context():
-    if type(context.app_config) == BaseConfig.__class__:
+    app = get_app()
+    if type(app) is None:
         raise NotImplementedError("app not configured")
 
-    ctx = AppContext(context.app_config)
+    ctx = AppContext(app)
     try:
         yield ctx
     finally:
         await ctx.close()
+
+
+async def controllers_dep():
+    c = get_controllers()
+    if type(c) is None:
+        raise NotImplementedError("controllers not configured")
+
+    yield c

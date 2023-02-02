@@ -1,17 +1,10 @@
 from app.config.config import Config
-from store.postgres import PostgresDB, PostgresConfig
-from store.redis_db import RedisDB, RedisConfig
+from store.config import PostgresConfig, RedisConfig
+from store.postgres import PostgresDB
+from store.redis_db import RedisDB
 
 
-class BaseConfig:
-    def _create_db(self):
-        raise NotImplementedError()
-
-    def _create_redis(self):
-        raise NotImplementedError()
-
-
-class AppConfig(BaseConfig):
+class BoatAPI:
     def __init__(self, config: Config):
         self.config = config
         self._create_db()

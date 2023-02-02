@@ -1,17 +1,15 @@
-import functools
-import json
 import asyncio
+import json
 import logging
 import traceback
 
 import async_timeout
-import redis
-
 from redis.asyncio.client import PubSub
-from app.context import AppContext
-from app.models.request_models import Telemetry
+
+from app.BoatAPI.context import AppContext
+from app.dependencies import get_context, controllers_dep
+from app.entities.telemetry import Telemetry
 from app.models.serial import SerialConfig
-from app.dependencies import get_context
 
 listener = None
 
@@ -25,6 +23,9 @@ class Listener:
     async def get_context(self):
         return await get_context().__anext__()
 
+    async def get_controllers(self):
+        return await controllers_dep().__anext__()
+
     async def listen(self):
         ctx = await self.get_context()
         redis = ctx.redis
@@ -37,7 +38,8 @@ class Listener:
         data = json.loads(msg['data'])
         telemetry = Telemetry(**data)
         ctx = await self.get_context()
-        task = asyncio.create_task(telemetry.save_current_state(ctx))
+        controllers = await self.get_controllers()
+        task = asyncio.create_task(controllers.state_controller.save_current_state(telemetry, ctx))
         task.add_done_callback(lambda context: asyncio.create_task(AppContext.done_callback(ctx)))
 
     async def listen_config(self, msg):
