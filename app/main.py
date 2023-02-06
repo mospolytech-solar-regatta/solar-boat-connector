@@ -22,8 +22,8 @@ async def startup_event():
     cfg = AppConfig(Config())
     context.set_config(cfg)
     origins = cfg.config.allow_origin
-    migrator = AlembicMigrator()
-    migrator.migrate_to_latest()
+    # migrator = AlembicMigrator()
+    # migrator.migrate_to_latest()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
