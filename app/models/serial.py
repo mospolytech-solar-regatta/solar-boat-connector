@@ -17,7 +17,7 @@ class SerialConfig(BaseModel):
     timeout: Optional[int] = 0
 
     async def apply(self, ctx: AppContext):
-        await ctx.redis.publish(ctx.redis.config.redis_config_channel, self.json())
+        await ctx.redis.publish(ctx.redis.config.config_channel, self.json())
 
     async def update(self, ctx: AppContext):
         await ctx.redis.set(serial_config_key, self.json())
