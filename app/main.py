@@ -24,8 +24,8 @@ async def startup_event():
     set_app(app)
     set_controllers(Controllers())
     origins = app.config.allow_origin
-    migrator = AlembicMigrator()
-    migrator.migrate_to_latest()
+    # migrator = AlembicMigrator()
+    # migrator.migrate_to_latest()
     api.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
