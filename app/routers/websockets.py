@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
-from app.context import AppContext
+from app.BoatAPI.context import AppContext
 from app.dependencies import get_context
 
 html = """

@@ -1,9 +1,9 @@
 import logging
 
 import redis.asyncio as redis
+from fastapi import WebSocket
 from redis.asyncio import ConnectionPool, Redis
 from redis.asyncio.client import PubSub
-from fastapi import WebSocket
 
 from store.config import RedisConfig
 
@@ -15,6 +15,9 @@ class RedisDB:
 
     def get_redis(self) -> Redis:
         return redis.Redis(connection_pool=self.pool)
+
+    def get_session(self) -> "RedisContext":
+        return RedisContext(self)
 
 
 class RedisContext:

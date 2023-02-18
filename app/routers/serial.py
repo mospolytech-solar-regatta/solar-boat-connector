@@ -1,9 +1,7 @@
-import json
-
 from fastapi import APIRouter, Depends
 
+from app.BoatAPI.context import AppContext
 from app.dependencies import get_context
-from app.context import AppContext
 from app.models import serial
 
 router = APIRouter(prefix='/serial')
@@ -11,8 +9,7 @@ router = APIRouter(prefix='/serial')
 
 @router.get("/config/", response_model=serial.SerialConfig)
 async def get_serial_config(ctx: AppContext = Depends(get_context)):
-    res = await serial.get_serial_config(ctx)
-    res = serial.SerialConfig(**json.loads(res))
+    res = await serial.SerialConfig.get(ctx)
     return res
 
 
