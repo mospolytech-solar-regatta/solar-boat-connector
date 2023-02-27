@@ -13,10 +13,13 @@ class LandData(BaseModel):
         low = 0
         high = 1
 
+    class Config:
+        orm_mode = True
+
     priority: Priority
     created_at: datetime
     sent_at: Optional[datetime]
-    id: Optional[int]  # TODO: удалить Optional, когда появится сохранение в базу
+    id: int
     data: str
 
     @staticmethod
