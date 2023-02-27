@@ -15,6 +15,7 @@ class LandData(BaseModel):
 
     priority: Priority
     created_at: datetime
+    sent_at: Optional[datetime]
     id: Optional[int]  # TODO: удалить Optional, когда появится сохранение в базу
     data: str
 
