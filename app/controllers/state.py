@@ -26,10 +26,7 @@ class StateController:
             data_model = LandDataModel.from_telemetry(telemetry, ctx)
             ctx.session.commit()
             data = LandData.from_orm(data_model)
-            data.sent_at = datetime.now()
             await ctx.redis.publish(ctx.redis.config.land_queue_channel, data.json())
-            data_model.sent_at = data.sent_at
-            data_model.save(ctx)
 
     async def count_laps(self, current: State, previous: State, ctx: AppContext):
         prev_dist = coord_utils.count_distance(previous.position_lat, previous.position_lng,

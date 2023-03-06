@@ -18,7 +18,6 @@ class LandData(BaseModel):
 
     priority: Priority
     created_at: datetime
-    sent_at: Optional[datetime]
     id: int
     data: str
 
