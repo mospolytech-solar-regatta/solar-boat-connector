@@ -4,8 +4,10 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from app.BoatAPI.context import AppContext
 from app.entities.state import State
 from app.models.state import State as StateModel
+from app.models.land_data import LandData as LandDataModel
 
 
 class LandData(BaseModel):
@@ -18,8 +20,14 @@ class LandData(BaseModel):
 
     priority: Priority
     created_at: datetime
-    id: int
+    id: Optional[int]
     data: str
+
+    def save(self, ctx: AppContext):
+        land_data = LandDataModel(**self.dict())
+        land_data.save(ctx)
+        ctx.session.commit()
+        self.id = land_data.id
 
     @staticmethod
     def from_telemetry(state: StateModel):

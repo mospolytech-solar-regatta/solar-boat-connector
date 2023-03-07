@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import app.utils.coordinates as coord_utils
 from app import constants
 from app.BoatAPI.context import AppContext
@@ -11,7 +9,6 @@ from app.entities.telemetry import Telemetry
 from app.models import Race
 from app.models.lap import Lap
 from app.models.state import State as StateModel
-from app.models.land_data import LandData as LandDataModel
 
 
 class StateController:
@@ -23,10 +20,9 @@ class StateController:
         status = await state.save(ctx)
         if status == TelemetrySaveStatus.PERM_SAVED:
             telemetry = StateModel.get_last(ctx)
-            data_model = LandDataModel.from_telemetry(telemetry, ctx)
-            ctx.session.commit()
-            data = LandData.from_orm(data_model)
-            await ctx.redis.publish(ctx.redis.config.land_queue_channel, data.json())
+            land_data = LandData.from_telemetry(telemetry)
+            land_data.save(ctx)
+            await ctx.redis.publish(ctx.redis.config.land_queue_channel, land_data.json())
 
     async def count_laps(self, current: State, previous: State, ctx: AppContext):
         prev_dist = coord_utils.count_distance(previous.position_lat, previous.position_lng,
