@@ -30,7 +30,7 @@ class LandData(BaseModel):
         self.id = land_data.id
 
     @staticmethod
-    def from_telemetry(state: StateModel):
+    def from_state(state: StateModel):
         state = State.from_orm(state)
         data = LandData(priority=LandData.Priority.low, data=state.json(), created_at=datetime.now())
         return data
