@@ -19,9 +19,10 @@ class StateController:
         state = await self.from_telemetry(telemetry, ctx)
         status = await state.save(ctx)
         if status == TelemetrySaveStatus.PERM_SAVED:
-            telemetry = StateModel.get_last(ctx)
-            data = LandData.from_telemetry(telemetry)
-            await ctx.redis.publish(ctx.redis.config.land_queue_channel, data.json())
+            state = StateModel.get_last(ctx)
+            land_data = LandData.from_state(state)
+            land_data.save(ctx)
+            await ctx.redis.publish(ctx.redis.config.land_queue_channel, land_data.json())
 
     async def count_laps(self, current: State, previous: State, ctx: AppContext):
         prev_dist = coord_utils.count_distance(previous.position_lat, previous.position_lng,
