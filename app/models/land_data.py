@@ -25,6 +25,11 @@ class LandData(Base):
         ctx.session.add(self)
 
     @staticmethod
+    def get_by_id(land_data_id: int, ctx: AppContext):
+        land_data = ctx.session.query(LandData).filter_by(id=land_data_id).first()
+        return land_data
+
+    @staticmethod
     def from_telemetry(state: StateModel, ctx: AppContext):
         state = State.from_orm(state)
         data = LandData(priority=LandData.Priority.low, data=state.json(), created_at=datetime.now())

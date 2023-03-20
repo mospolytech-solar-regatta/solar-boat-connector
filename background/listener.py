@@ -8,6 +8,7 @@ from redis.asyncio.client import PubSub
 
 from app.BoatAPI.context import AppContext
 from app.dependencies import get_context, controllers_dep
+from app.entities.land_ack import LandAck
 from app.entities.telemetry import Telemetry
 from app.models.serial import SerialConfig
 
@@ -31,7 +32,8 @@ class Listener:
         redis = ctx.redis
         self.pubsub = await redis.pubsub()
         await self.pubsub.subscribe(**{redis.config.telemetry_channel: self.listen_telemetry,
-                                       redis.config.config_apply_channel: self.listen_config})
+                                       redis.config.config_apply_channel: self.listen_config,
+                                       redis.config.connector_events_channel: self.listen_connector_events})
         self.task = asyncio.create_task(self.run(self.pubsub))
 
     async def listen_telemetry(self, msg):
@@ -47,6 +49,14 @@ class Listener:
         cfg = SerialConfig(**data['config'])
         ctx = await self.get_context()
         task = asyncio.create_task(cfg.update(ctx))
+        task.add_done_callback(lambda context: asyncio.create_task(AppContext.done_callback(ctx)))
+
+    async def listen_connector_events(self, msg):
+        data = json.loads(msg['data'])
+        ack = LandAck(**data)
+        ctx = await self.get_context()
+        controllers = await self.get_controllers()
+        task = asyncio.create_task(controllers.land_data_controller.save_sending_time(ack, ctx))
         task.add_done_callback(lambda context: asyncio.create_task(AppContext.done_callback(ctx)))
 
     async def stop(self):
