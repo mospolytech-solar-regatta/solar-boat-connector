@@ -19,6 +19,7 @@ class RedisConfig(BaseSettings):
     config_apply_channel: str
     config_channel: str
     land_queue_channel: str
+    connector_events_channel: str
 
     class Config:
         env_prefix = 'redis_'

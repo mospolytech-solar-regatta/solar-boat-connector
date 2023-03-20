@@ -12,6 +12,7 @@ class Config(BaseSettings):
     redis_config_channel: str
     redis_config_apply_channel: str
     redis_land_queue_channel: str
+    redis_connector_events_channel: str
     allow_origin: str = '["*"]'
     origin: str = "http://localhost:8000"
 
