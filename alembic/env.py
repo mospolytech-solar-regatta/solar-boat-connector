@@ -6,10 +6,10 @@ from sqlalchemy import pool
 
 from app.config.config import Config
 
+from app.models.land_data import LandData
 from app.models.state import State
 from app.models.lap import Lap
 from app.models.race import Race
-from app.models.land_data import LandData
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
