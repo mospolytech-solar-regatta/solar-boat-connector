@@ -21,3 +21,8 @@ class LandData(Base):
 
     def save(self, ctx: AppContext):
         ctx.session.add(self)
+
+    @staticmethod
+    def get_by_id(land_data_id: int, ctx: AppContext):
+        land_data = ctx.session.query(LandData).filter_by(id=land_data_id).first()
+        return land_data

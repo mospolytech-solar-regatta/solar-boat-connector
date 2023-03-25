@@ -12,6 +12,7 @@ class Config(BaseSettings):
     redis_config_channel: str = 'serial_config'
     redis_config_apply_channel: str = 'serial_config_apply'
     redis_land_queue_channel: str = 'land_queue_channel'
+    redis_connector_events_channel: str = "connector_events_channel"
     allow_origin: str = '["*"]'
     origin: str = "http://localhost:8000"
 
