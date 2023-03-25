@@ -4,8 +4,6 @@ from enum import IntEnum
 from sqlalchemy import Column, Integer, DateTime, String
 
 from app.BoatAPI.context import AppContext
-from app.entities.state import State
-from app.models.state import State as StateModel
 from store.postgres import Base
 
 
@@ -28,10 +26,3 @@ class LandData(Base):
     def get_by_id(land_data_id: int, ctx: AppContext):
         land_data = ctx.session.query(LandData).filter_by(id=land_data_id).first()
         return land_data
-
-    @staticmethod
-    def from_telemetry(state: StateModel, ctx: AppContext):
-        state = State.from_orm(state)
-        data = LandData(priority=LandData.Priority.low, data=state.json(), created_at=datetime.now())
-        data.save(ctx)
-        return data
