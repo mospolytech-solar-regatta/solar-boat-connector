@@ -2,7 +2,7 @@
 __pycache__
 .env
 celerybeat-schedule*
-background/config/local*
+app/handlers/background/config/local*
 solar-tester
 !/.idea/runConfigurations
 venv

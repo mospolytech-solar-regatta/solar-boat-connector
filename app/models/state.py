@@ -1,8 +1,8 @@
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.types import DateTime, Integer, Float
 
-from app.BoatAPI.context import AppContext
-from store.postgres import Base
+from app.context import Context
+from .base import Base
 
 
 class State(Base):
@@ -26,15 +26,15 @@ class State(Base):
     lap_point_lng = Column(Float)
     lap_id = Column(Integer, ForeignKey("laps.id"))
 
-    def save(self, ctx: AppContext):
+    def save(self, ctx: Context):
         ctx.session.add(self)
 
     @staticmethod
-    def save_from_schema(schema, ctx: AppContext):
+    def save_from_schema(schema, ctx: Context):
         telemetry = State(**schema.dict())
         telemetry.save(ctx)
 
     @staticmethod
-    def get_last(ctx: AppContext):
+    def get_last(ctx: Context):
         res = ctx.session.query(State).order_by(State.id.desc()).first()
         return res

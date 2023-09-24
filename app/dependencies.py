@@ -1,22 +1,10 @@
-from app.BoatAPI import get_app, get_controllers
-from app.BoatAPI.context import AppContext
+from typing import Annotated
 
+from fastapi import Depends
 
-async def get_context():
-    app = get_app()
-    if type(app) is None:
-        raise NotImplementedError("app not configured")
+from app.client import redis, postgres
+from app.context import Context, ContextFactory
 
-    ctx = AppContext(app)
-    try:
-        yield ctx
-    finally:
-        await ctx.close()
+context_factory = ContextFactory(redis, postgres)
 
-
-async def controllers_dep():
-    c = get_controllers()
-    if type(c) is None:
-        raise NotImplementedError("controllers not configured")
-
-    yield c
+context_dep = Annotated[Context, Depends(context_factory)]

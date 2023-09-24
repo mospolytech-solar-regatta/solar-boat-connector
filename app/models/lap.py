@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.BoatAPI.context import AppContext
-from store.postgres import Base
+from app.context import Context
+from .base import Base
 
 
 class Lap(Base):
@@ -16,10 +16,10 @@ class Lap(Base):
     race_id = Column(Integer, ForeignKey("races.id"))
     race = relationship("Race", back_populates="laps")
 
-    def save(self, ctx: AppContext):
+    def save(self, ctx: Context):
         ctx.session.add(self)
 
     @staticmethod
-    def get_current_lap(ctx: AppContext):
+    def get_current_lap(ctx: Context):
         lap = ctx.session.query(Lap).order_by(Lap.start_time.desc()).first()
         return lap if lap and not lap.end_time else None
