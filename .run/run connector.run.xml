@@ -2,6 +2,7 @@
   <configuration default="false" name="run connector" type="Python.FastAPI">
     <option name="file" value="$PROJECT_DIR$/app/main.py" />
     <module name="solar-boat-connector" />
+    <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <option name="SDK_HOME" value="" />
@@ -18,7 +19,7 @@
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
         <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH=".env" />
+        <ENTRY IS_ENABLED="false" PARSER="env" IS_EXECUTABLE="false" PATH=".env" />
         <ENTRY IS_ENABLED="false" PARSER="env" IS_EXECUTABLE="false" PATH="serial.config" />
       </ENTRIES>
     </EXTENSION>

@@ -1,7 +1,9 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
+    model_config = SettingsConfigDict(env_file='.env')
+
     postgres_db: str
     postgres_password: str = 'postgres'
     postgres_server: str = '127.0.0.1'
@@ -15,6 +17,3 @@ class Config(BaseSettings):
     redis_connector_events_channel: str = "connector_events_channel"
     allow_origin: str = '["*"]'
     origin: str = "http://localhost:8000"
-
-    class Config:
-        env_file = ".env"
