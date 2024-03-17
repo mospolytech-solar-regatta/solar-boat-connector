@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class RedisConfig(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env', env_prefix = 'redis_')
+    model_config = SettingsConfigDict(extra='ignore', env_file='.env', env_prefix='redis_')
 
     dsn: str = 'redis://localhost/'
     telemetry_channel: str = 'telemetry'
