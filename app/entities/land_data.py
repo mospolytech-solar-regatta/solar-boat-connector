@@ -31,6 +31,6 @@ class LandData(BaseModel):
 
     @staticmethod
     def from_state(state: StateModel):
-        state = State.from_orm(state)
-        data = LandData(priority=LandData.Priority.low, data=state.model_dump_json(), created_at=datetime.now())
+        state_obj = State.from_orm(state)
+        data = LandData(id=state.id, priority=LandData.Priority.low, data=state_obj.model_dump_json(), created_at=datetime.now())
         return data
