@@ -30,7 +30,6 @@ class State(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
     @staticmethod
     async def get_current_state(ctx: Context) -> 'State':
