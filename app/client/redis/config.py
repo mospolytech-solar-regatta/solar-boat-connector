@@ -6,7 +6,7 @@ class RedisConfig(BaseSettings):
 
     dsn: str = 'redis://localhost/'
     telemetry_channel: str = 'telemetry'
-    config_apply_channel: str = 'serial_config'
-    config_channel: str = 'serial_config_apply'
+    config_apply_channel: str = 'serial_config_apply'
+    config_channel: str = 'serial_config'
     land_queue_channel: str = 'land_queue_channel'
     connector_events_channel: str = "connector_events_channel"
